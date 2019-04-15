@@ -38,10 +38,36 @@ def isbn_db_html_parse(isbn_db_html):
             isbn_image_link = attribs['data']
             # Only interested in the first one
             break
+    # Find the table of sites
+    table_class = 'table table-hover'
+    #ßprint(type(table_class))
+    table_elem = None
+    for elem in html_tree.iter():
+        if elem.tag == 'table':
+            attribs = dict(elem.attrib)
+            if 'class' in attribs:
+                if attribs['class'] == table_class:
+                    table_elem = elem
+                    break
+    
+    for sub_elem in table_elem:
+        if sub_elem.tag == 'tr' and b'amazon' in ET.tostring(sub_elem):
+            for td_elem in sub_elem:
+                if len(td_elem):
+                    for child in td_elem:
+                        if child.tag == 'a':
+                            attribs = dict(child.attrib)
+                            amazon_link = attribs['href']
+                            break
+            break
+        
+
+
     return isbn_image_link, amazon_link
     
     
 
 if __name__ == '__main__':
-    response = isbn_lookup(9780735219090)
-    isbn_db_html_parse(response)
+    with open('../isb.html', 'rb') as f:
+        response = f.read()
+    print(isbn_db_html_parse(response))
