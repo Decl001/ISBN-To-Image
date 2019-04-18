@@ -53,21 +53,28 @@ def isbn_db_html_parse(isbn_db_html):
     for sub_elem in table_elem:
         if sub_elem.tag == 'tr' and b'amazon' in ET.tostring(sub_elem):
             for td_elem in sub_elem:
-                if len(td_elem):
+                if len(td_elem):  # pylint: disable=C1801
                     for child in td_elem:
                         if child.tag == 'a':
                             attribs = dict(child.attrib)
                             amazon_link = attribs['href']
                             break
             break
-        
-
 
     return isbn_image_link, amazon_link
     
-    
+
+def get_image(image_link, output_filename):
+    response = requests.get(image_link)
+    if response.status_code == 200:
+        with open(output_filename, 'wb') as img_file:
+            img_file.write(response.content)
+    else:
+        raise ValueError(
+            'Expected 200 response code but got: %d' % response.status_code
+        )
 
 if __name__ == '__main__':
     with open('../isb.html', 'rb') as f:
         response = f.read()
-    print(isbn_db_html_parse(response))
+    isbn_link, amazon_link = isbn_db_html_parse(response)
