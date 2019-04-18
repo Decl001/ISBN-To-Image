@@ -30,7 +30,6 @@ def isbn_db_html_parse(isbn_db_html):
     parser = ET.HTMLParser(encoding='utf-8')
     html_tree = ET.fromstring(isbn_db_html, parser=parser)
     isbn_image_link = ''
-    amazon_link = ''
     # Get the base image stored on isbn db
     for elem in html_tree.iter():
         if elem.tag == 'object':
@@ -40,7 +39,6 @@ def isbn_db_html_parse(isbn_db_html):
             break
     # Find the table of sites
     table_class = 'table table-hover'
-    #ßprint(type(table_class))
     table_elem = None
     for elem in html_tree.iter():
         if elem.tag == 'table':
@@ -49,20 +47,28 @@ def isbn_db_html_parse(isbn_db_html):
                 if attribs['class'] == table_class:
                     table_elem = elem
                     break
-    
-    for sub_elem in table_elem:
-        if sub_elem.tag == 'tr' and b'amazon' in ET.tostring(sub_elem):
-            for td_elem in sub_elem:
+    amazon_link = get_amazon_link_from_table(table_elem)
+    return isbn_image_link, amazon_link
+
+def get_amazon_link_from_table(table_elem):
+
+    amazon_link = ''
+    table_row = None
+    if table_elem is not None:
+        for sub_elem in table_elem:
+            if sub_elem.tag == 'tr' and b'amazon' in ET.tostring(sub_elem):
+                table_row = sub_elem
+                break
+        if table_row is not None:
+            for td_elem in table_row:
                 if len(td_elem):  # pylint: disable=C1801
                     for child in td_elem:
                         if child.tag == 'a':
                             attribs = dict(child.attrib)
                             amazon_link = attribs['href']
                             break
-            break
+    return amazon_link
 
-    return isbn_image_link, amazon_link
-    
 
 def get_image(image_link, output_filename):
     response = requests.get(image_link)
@@ -75,6 +81,7 @@ def get_image(image_link, output_filename):
         )
 
 if __name__ == '__main__':
-    with open('../isb.html', 'rb') as f:
-        response = f.read()
+    # with open('../isb.html', 'rb') as f:
+    #     response = f.read()
+    response = isbn_lookup(9780735219090)
     isbn_link, amazon_link = isbn_db_html_parse(response)
