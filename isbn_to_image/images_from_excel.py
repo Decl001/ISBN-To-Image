@@ -61,7 +61,6 @@ def dataframe_to_images(df, output_folder):
             created += 1
         else:
             errored.append(title)
-        if i > 10: break
     return created, errored
 
 def main(args):
