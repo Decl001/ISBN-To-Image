@@ -7,7 +7,7 @@ import numpy as np
 from datetime import datetime
 from xlrd.biffh import XLRDError
 
-import isbn_lookup 
+from isbn_to_image import isbn_lookup
 
 
 def load_dataframes(excel_file):
@@ -51,7 +51,7 @@ def dataframe_to_images(df, output_folder):
     created = 0
     errored = []
     for i, (isbn, title) in enumerate(zip(df.Isbn, df.Title)):
-        isbn_db_page = isbn_lookup.isbn_lookup(isbn)
+        isbn_db_page = isbn_lookup.isbn_code_lookup(isbn)
         image, _ = isbn_lookup.isbn_db_html_parse(isbn_db_page)
         if image:
             filename = str(i + 1) + '-' + title + '.png'
@@ -63,7 +63,8 @@ def dataframe_to_images(df, output_folder):
             errored.append(title)
     return created, errored
 
-def main(args):
+def main():
+    args = parse_args()
     try:
         df_pback, df_hback = load_dataframes(args.excel_file)
         pb_folder, hb_folder = setup_folders(args.output_folder)
@@ -111,7 +112,3 @@ def parse_args():
     )
     args = parser.parse_args()
     return args
-
-if __name__ == '__main__':
-    ARGS = parse_args()
-    main(ARGS)

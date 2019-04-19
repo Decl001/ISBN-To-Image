@@ -5,7 +5,7 @@ from lxml import etree as ET
 ISBN_DB_URL = 'https://isbndb.com/book/'
 
 
-def isbn_lookup(isbn_code):
+def isbn_code_lookup(isbn_code):
     '''
     Takes in an isbn code and returns the html result of
     the ISBN DB request for that code
@@ -79,9 +79,3 @@ def get_image(image_link, output_filename):
         raise ValueError(
             'Expected 200 response code but got: %d' % response.status_code
         )
-
-if __name__ == '__main__':
-    # with open('../isb.html', 'rb') as f:
-    #     response = f.read()
-    response = isbn_lookup(9780735219090)
-    isbn_link, amazon_link = isbn_db_html_parse(response)
